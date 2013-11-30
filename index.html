@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Spring MVC - Introduction</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="reveal.js-2.6.0/css/reveal.min.css">
+		<link rel="stylesheet" href="reveal.js-2.6.0/css/theme/default.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="reveal.js-2.6.0/lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+		<script>
+			document.write( '<link rel="stylesheet" href="reveal.js-2.6.0/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="reveal.js-2.6.0/lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>Spring MVC</h1>
+					<h3>Introduction</h3>
+					
+					<p style="margin-top: 4em">
+						<small>Jan Ypma<br/>
+						<a href="mailto:ypma@lundogbendsen.dk">
+							ypma@lundogbendsen.dk
+						</a></small>
+					</p>
+					
+					<p style="margin-top: 2em; margin-right: 3em; text-align: right">
+					  <a href="http://www.lundogbendsen.dk">
+					    <img width="300" height="65" src="lb.png" alt="L&amp;B Logo"  style="background-color: white; border: 3px solid white; -webkit-transform: rotate(-10deg); -moz-transform: rotate(-10deg);"/>
+            </a>
+					</p>
+          
+          <p style="text-align: left; font-size: 30%">
+            <a href="index.html?print-pdf">Print / PDF</a>
+          </p>
+				</section>
+
+				<section>
+					<h2>A quick refresher</h2>
+					<p>Remind us again about:</p>
+					<ul>
+					  <li>Auto-wiring (<code>@Autowire</code>)</li>
+					  <li>Aspect-Oriented Programming (AOP)</li>
+					  <li>Classpath scanning</li>
+					  <li>JAXB (XML binding)</li>
+					</ul>
+
+					<aside class="notes">
+						Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).
+					</aside>
+				</section>
+
+				<section>
+					<h2>MVC Definitions</h2>
+					<ul>
+					  <li>
+							<em>Model</em><br/>Structured information used / created on a page		
+						</li>
+						<li>
+						  <em>View</em><br/>User interface for interacting with the model
+						</li>
+						<li>
+						  <em>Controller</em><br/>Logic binding model and view together
+						</li>
+					</ul>
+				</section>
+				
+				<section>
+					<h2>Spring MVC Architecture</h2>
+					<ul>
+					  <li><em>Model</em><br/>Plain old Java classes (POJO)<br/>Per request or session</li>
+					  <li><em>View</em><br/>Pluggable, typically JSP pages, Freemarker or Velocity</li>
+					  <li><em>Controller</em><br/>Classpath-scanned <code>@Component</code>-annotated classes<br/>Singletons</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>An example model class</h2>
+					<p><em>Immutable</em> (see advanced section)</p>
+					<pre><code data-trim contenteditable>					
+@XmlRootElement(name = "TodoItem")
+@XmlAccessorType(XmlAccessType.NONE)
+public class TodoItem {
+    public static TodoItem create(String title) {
+        return new TodoItem(UUID.randomUUID(), title);
+    }
+    
+    @XmlElement(name = "ID") private UUID id;
+    @NotBlank @XmlElement(name = "Title") private String title;
+    
+    public String getTitle() { return title; }
+    
+    public UUID getId() { return id; }
+    
+    private TodoItem(UUID id, String title) { ... }
+}
+					</code></pre>
+				</section>
+
+				<section>
+					<h2>An example JSP view</h2>
+					<p>Creating/editing a todo item 
+					<pre><code data-trim>
+&lt;h3&gt;Edit a todo item&lt;/h3&gt;
+&lt;form:form id="form" method="post" modelAttribute="item"&gt;
+  &lt;form:hidden path="id"/&gt;
+
+  &lt;div&gt;
+    &lt;form:label path="title"&gt;
+      &lt;spring:message code="item.title" /&gt;
+    &lt;/form:label&gt;
+    &lt;form:input path="title" placeholder="What needs to be done?" /&gt;
+    &lt;form:errors path="title" /&gt;
+  &lt;/div&gt;
+
+  &lt;div&gt;&lt;button type="submit" class="btn"&gt;Save&lt;/button&gt;&lt;/div&gt;
+&lt;/form:form&gt;
+
+</code></pre>
+				</section>
+
+        <section>
+          <h2>Supported view technologies</h2>
+          <ul>
+            <li>
+              <em>JSP</em> (with JSTL and Spring MVC tag libraries)<br/>
+              Popular and documented. Many initial quirks resolved in latest JSP versions.
+              Usually combined with 
+              <a href="http://wiki.sitemesh.org/display/sitemesh3/Getting+Started+with+SiteMesh+3">Sitemesh</a>
+               or 
+              <a href="http://tiles.apache.org/framework/tutorial/basic/pages.html">Tiles</a> for layout.
+            </li>
+            <li>
+              <em>Velocity</em> or <em>Freemarker</em><br/> 
+              Embedded templating languages, Spring integration comes with simple layout engine. 
+            </li> 
+            <li>
+              <em>Your own</em><br/>
+              Just write an implementation of <code><a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/servlet/ViewResolver.html">ViewResolver</a></code>
+            </li>
+          </ul>
+        </section>
+
+				<section>
+					<h2>An example controller</h2>
+					<pre><code data-trim style="font-size: 80%">
+@Controller @RequestMapping("/todos") public class CreateTodoController {
+    @ModelAttribute("item")
+    public TodoItem item() { return TodoItem.empty(); }
+    
+    @RequestMapping(value="/create", method = GET)
+    public String showCreate() { return "/todo/create"; }
+    
+    @RequestMapping(value="/create", method = POST)
+    public String createFromForm(@Valid @ModelAttribute("item") TodoItem item,
+                                 BindingResult result) {
+        if (result.hasErrors()) { 
+            return showCreate();
+        } else {
+            todoService.save(item.withId());
+            return "redirect:/todos";            
+        }
+}   }					
+          </code></pre>
+					
+				</section>
+
+				<section>
+					<h2>Arguments on Controller methods</h2>
+          <p><b>Annotations</b></p>
+					<ul>
+						<li><a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/bind/annotation/ModelAttribute.html"><code>@ModelAttribute</code></a>
+                - refer to scoped bean in model</li>
+						<li><a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/bind/annotation/PathVariable.html"><code>@PathVariable</code></a>
+                - extract part of url into parameter</li>
+						<li><a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/bind/annotation/RequestBody.html"><code>@RequestBody</code></a> 
+                - capture / unmarshal request</li>
+						<li><a href="http://docs.oracle.com/javaee/6/api/javax/validation/Valid.html"><code>@Valid</code></a> - apply validations to bean</li>
+					</ul>
+          <p><b>Types</b></p>
+          <ul>
+            <li><a href="http://docs.spring.io/spring/docs/3.2.5.RELEASE/javadoc-api/org/springframework/web/util/UriComponentsBuilder.html"><code>UriComponentsBuilder</code></a> 
+                - to build up <code>Location</code> headers</li>
+            <li><code>InputStream</code>, <code>OutputStream</code> - to get access to request and response streams</li>
+            <li><a href="http://docs.spring.io/spring/docs/3.2.5.RELEASE/javadoc-api/org/springframework/validation/BindingResult.html"><code>BindingResult</code></a>
+             - Will contain any validation errors of <code>@Valid</code> arguments</li>
+          </ul>
+				</section>
+
+        <section>
+          <h2>Return types for Controller methods</h2>
+          <ul>
+            <li><code>String</code> - Logical view name to render (resolved by <code><a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/servlet/ViewResolver.html">ViewResolver</a></code>)</li>
+            <li><a href="http://docs.spring.io/spring/docs/3.2.5.RELEASE/javadoc-api/org/springframework/web/portlet/ModelAndView.html"><code>ModelAndView</code></a> - Logical view to render, and a map of model beans</li>
+            <li><code>void</code> - Custom output, e.g. by using <code>OutputStream</code> directly</li>
+            <li><code><a href="">@ResponseBody</a> Object</code> - Marshal object as XML or JSON</li>
+          </ul>
+        </section>
+
+        <section>
+          <p>Thank you</p>
+
+          <p style="margin-top: 4em">
+            <small>Jan Ypma<br/>
+            <a href="mailto:ypma@lundogbendsen.dk">
+              ypma@lundogbendsen.dk
+            </a></small>
+          </p>
+          
+          <p style="margin-top: 2em; margin-right: 3em; text-align: right">
+            <a href="http://www.lundogbendsen.dk">
+              <img width="300" height="65" src="lb.png" alt="L&amp;B Logo"  style="background-color: white; border: 3px solid white; -webkit-transform: rotate(-10deg); -moz-transform: rotate(-10deg);"/>
+            </a>
+          </p>
+        </section>
+			</div>
+
+		</div>
+
+		<script src="reveal.js-2.6.0/lib/js/head.min.js"></script>
+		<script src="reveal.js-2.6.0/js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+				slideNumber: false,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'reveal.js-2.6.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'reveal.js-2.6.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'reveal.js-2.6.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'reveal.js-2.6.0/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'reveal.js-2.6.0/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'reveal.js-2.6.0/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
