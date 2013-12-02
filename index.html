@@ -14,7 +14,7 @@
 
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<link rel="stylesheet" href="reveal.js-2.6.0/css/reveal.min.css">
+		<link rel="stylesheet" href="reveal.js-2.6.0/css/reveal.css">
 		<link rel="stylesheet" href="reveal.js-2.6.0/css/theme/default.css" id="theme">
 
 		<!-- For syntax highlighting -->
@@ -67,10 +67,6 @@
 					  <li>Classpath scanning</li>
 					  <li>JAXB (XML binding)</li>
 					</ul>
-
-					<aside class="notes">
-						Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).
-					</aside>
 				</section>
 
 				<section>
@@ -123,7 +119,7 @@ public class TodoItem {
 				<section>
 					<h2>An example JSP view</h2>
 					<p>Creating/editing a todo item 
-					<pre><code data-trim>
+					<pre><code data-trim  contenteditable>
 &lt;h3&gt;Edit a todo item&lt;/h3&gt;
 &lt;form:form id="form" method="post" modelAttribute="item"&gt;
   &lt;form:hidden path="id"/&gt;
@@ -166,7 +162,7 @@ public class TodoItem {
 
 				<section>
 					<h2>An example controller</h2>
-					<pre><code data-trim style="font-size: 80%">
+					<pre><code data-trim  contenteditable style="font-size: 80%">
 @Controller @RequestMapping("/todos") public class CreateTodoController {
     @ModelAttribute("item")
     public TodoItem item() { return TodoItem.empty(); }
@@ -189,27 +185,30 @@ public class TodoItem {
 				</section>
 
 				<section>
-					<h2>Arguments on Controller methods</h2>
-          <p><b>Annotations</b></p>
-					<ul>
-						<li><a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/bind/annotation/ModelAttribute.html"><code>@ModelAttribute</code></a>
-                - refer to scoped bean in model</li>
-						<li><a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/bind/annotation/PathVariable.html"><code>@PathVariable</code></a>
-                - extract part of url into parameter</li>
-						<li><a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/bind/annotation/RequestBody.html"><code>@RequestBody</code></a> 
-                - capture / unmarshal request</li>
-						<li><a href="http://docs.oracle.com/javaee/6/api/javax/validation/Valid.html"><code>@Valid</code></a> - apply validations to bean</li>
-					</ul>
-          <p><b>Types</b></p>
+					<h2>Controller arguments (types)</h2>
           <ul>
             <li><a href="http://docs.spring.io/spring/docs/3.2.5.RELEASE/javadoc-api/org/springframework/web/util/UriComponentsBuilder.html"><code>UriComponentsBuilder</code></a> 
                 - to build up <code>Location</code> headers</li>
             <li><code>InputStream</code>, <code>OutputStream</code> - to get access to request and response streams</li>
             <li><a href="http://docs.spring.io/spring/docs/3.2.5.RELEASE/javadoc-api/org/springframework/validation/BindingResult.html"><code>BindingResult</code></a>
              - Will contain any validation errors of <code>@Valid</code> arguments</li>
+            <li>(annotated) <code>Object</code> - Model beans, url segments, ... 
           </ul>
 				</section>
 
+        <section>
+          <h2>Controller arguments (annotations)</h2>
+          <ul>
+            <li><a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/bind/annotation/ModelAttribute.html"><code>@ModelAttribute</code></a>
+                - refer to scoped bean in model</li>
+            <li><a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/bind/annotation/PathVariable.html"><code>@PathVariable</code></a>
+                - extract part of url into parameter</li>
+            <li><a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/bind/annotation/RequestBody.html"><code>@RequestBody</code></a> 
+                - capture / unmarshal request</li>
+            <li><a href="http://docs.oracle.com/javaee/6/api/javax/validation/Valid.html"><code>@Valid</code></a> - apply validations to bean</li>
+          </ul>
+        </section>
+        
         <section>
           <h2>Return types for Controller methods</h2>
           <ul>
@@ -217,6 +216,109 @@ public class TodoItem {
             <li><a href="http://docs.spring.io/spring/docs/3.2.5.RELEASE/javadoc-api/org/springframework/web/portlet/ModelAndView.html"><code>ModelAndView</code></a> - Logical view to render, and a map of model beans</li>
             <li><code>void</code> - Custom output, e.g. by using <code>OutputStream</code> directly</li>
             <li><code><a href="">@ResponseBody</a> Object</code> - Marshal object as XML or JSON</li>
+          </ul>
+        </section>
+        
+        <section>
+          <h2>Java-based configuration</h2>
+          <ul>
+            <li>Finally, a full web application without any XML files</li>
+            <li>Building on Servlet 3.0, extend (yes, really)
+                <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/servlet/support/AbstractAnnotationConfigDispatcherServletInitializer.html"><code>AbstractAnnotationConfigDispatcherServletInitializer</code></a>
+                <br/>This replaces <code>web.xml</code>.</li>
+            <li>Refer to one or more <a href=""><code>@Configuration</code></a> classes.<br/>
+                This replaces <code>spring.xml</code> and <code>spring-servlet.xml</code>.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Java-based configuration</h2>
+          <p>Advantages</p>
+          <ul>
+            <li>Compiler will verify type and property correctness early on</li>
+            <li>Much more straightforward composition</li>
+            <li>Can rely on existing Java tooling for</li>
+            <ul>
+              <li>Code completion</li>
+              <li>Refactoring</li>
+              <li>Unit testing</li>
+            </ul>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Internationalization and Localization</h2>
+          <ul>
+            <li>Have a <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/servlet/LocaleResolver.html"><code>LocaleResolver</code></a> bean which picks the request <a href="http://docs.oracle.com/javase/7/docs/api/java/util/Locale.html"><code>Locale</code></a></li>
+            <li>Have one or more <a href="http://docs.spring.io/spring/docs/3.2.5.RELEASE/javadoc-api/org/springframework/context/MessageSource.html"><code>MessageSource</code></a> beans with your translated texts</li>
+            <li>Use the JSP tag library to render messages
+            <pre><code>&lt;spring:message code="item.title" /&gt;</code></pre>
+            </li>
+            <li>Also available to the standard JSTL <code>fmt:</code> tag library (when using <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/servlet/view/JstlView.html"><code>JstlView</code></a>)</li>
+          </ul>
+        </section>
+
+        <section>
+          <h1>Let's look at some code</h1>
+        </section>
+
+        <section>
+          <h2>Advantages</h2>
+          <p><b>Spring MVC</b></p>
+          <ul>
+            <li>Gradual learning curve (until you reach the pixie dust magic)</li>
+            <li>Broad access to support and internet forums</li>
+            <li>Unified model for MVC and REST</li>
+          </ul>
+          <p style="margin-top: 1em;"><b>Server-side MVC in general</b></p>
+          <ul>
+            <li>Server-side handling: less browser quirks to deal with</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Disadvantages</h2>
+          <p><b>Spring MVC</b></p>
+          <ul>
+            <li>Big. <em>"It has become what it tried to replace."</em></li>
+            <li>Annotation / AOP / Proxy magic (e.g. transactions)</li>
+            <li>Choose between classpath scanning and XML hell</li>
+          </ul>
+          <p style="margin-top: 1em;"><b>Server-side MVC in general</b></p>
+          <ul>
+            <li>Statefulness provides challenges in scalability, deployability</li>
+            <li>Still need to deal with concurrency</li>
+            <li>Repetition due to redirect-after-post</li>
+          </ul>
+        </section>
+        
+        <section>
+          <h2>A note about testing</h2>
+          <ul>
+            <li><em>Unit testing</em> - Keep units small (one class), use frameworks like <a href="http://code.google.com/p/mockito/">Mockito</a> </li>
+            <li><em>Integration testing</em> - Keep units big (whole system), use frameworks like <a href="http://www.seleniumhq.org/projects/webdriver/">WebDriver</a> and embed <a href="http://www.eclipse.org/jetty/">Jetty</a></li>
+            <li>Stay away from "half a system" integration tests, e.g. <a href="SpringJUnit4ClassRunner"><code>SpringJUnit4ClassRunner</code></a>
+              or <a href="WebAppConfiguration"><code>@WebAppConfiguration</code></a>, even tough they're tempting.
+            <ul>
+              <li>My tests are green!</li>
+              <li>...so what exactly did I just prove?</li>
+            </ul> 
+          </ul>
+        </section>
+
+        <section>
+          <h3>Securing Spring MVC with Spring Security</h3>
+          <ul>
+            <li>Separate project, independent of Spring MVC</li>
+            <li>Servlet filter protecting against e.g. <a href="http://en.wikipedia.org/wiki/Cross-site_request_forgery">CSRF</a> or <a href="http://en.wikipedia.org/wiki/Session_fixation">Session Fixation</a>
+            <li>Declarative security in several domains
+              <ul>
+                <li>URL patterns</li>
+                <li>JSR-250 <a href="http://docs.oracle.com/javaee/5/api/javax/annotation/security/RolesAllowed.html"><code>@RolesAllowed</code></a> annotation (recommended)</li>
+                <li>Custom Spring annotations</li>
+              </ul> 
+            <li>Java-based configuration from version 3.2</li>
+            <li>JSP tag library for conditional display</li>
           </ul>
         </section>
 
@@ -236,6 +338,94 @@ public class TodoItem {
             </a>
           </p>
         </section>
+        
+        <section>
+          <h1>Spring MVC</h1>
+          <h3>Advanced</h3>
+          
+          <p style="margin-top: 4em">
+            <small>Jan Ypma<br/>
+            <a href="mailto:ypma@lundogbendsen.dk">
+              ypma@lundogbendsen.dk
+            </a></small>
+          </p>
+          
+          <p style="margin-top: 2em; margin-right: 3em; text-align: right">
+            <a href="http://www.lundogbendsen.dk">
+              <img width="300" height="65" src="lb.png" alt="L&amp;B Logo"  style="background-color: white; border: 3px solid white; -webkit-transform: rotate(-10deg); -moz-transform: rotate(-10deg);"/>
+            </a>
+          </p>
+        </section>
+        
+        <section>
+          <h2>Request lifecycle</h2>
+          <p style="float:left; width: 40%;">
+            <img src="http://yuml.me/diagram/scruffy;/activity/(start)-1 Request>(DispatcherServlet)->(Controller)-2 ModelAndView>(DispatcherServlet)->(ViewResolver)-3 View>(DispatcherServlet)->(View)->(DispatcherServlet)-4 Response>(end).svg"/>
+          </p>
+          <ol style="float: right; width: 50%;">
+            <li>Request arrives, <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/servlet/DispatcherServlet.html">servlet</a> picks controller</li>
+            <li><a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/servlet/mvc/Controller.html">Controller</a> returns model and view name</li>
+            <li><a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/servlet/ViewResolver.html"><code>ViewResolver</code></a> instantiates view from name</li>
+            <li><a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/servlet/View.html"><code>View</code></a> renders actual response</li>
+          </ol>
+        </section>
+                
+        <section>
+          <aside class="notes">
+            Nothing to do with Hibernate itself
+          </aside>
+          <h2>Validation</h2>
+          <p>Integration between Spring MVC and <a href="">Hibernate validator</a></p>
+          <ul>
+            <li>Declarative, recursive validation, e.g. <code>@Max(42)</code>, <code>@NotEmpty</code>, <code>@EMail</code>, ...</li>
+            <li>Automatically invoked for <a href="http://docs.oracle.com/javaee/6/api/javax/validation/Valid.html"><code>@Valid</code></a> controller methods
+              <ul>
+                <li>and for service methods if using <a href="http://docs.spring.io/spring/docs/3.2.5.BUILD-SNAPSHOT/javadoc-api/org/springframework/validation/beanvalidation/MethodValidationPostProcessor.html"><code>MethodValidationPostProcessor</code></a>
+              </ul>
+            </li>
+            <li>Integrated into Spring's messages and JSP tag library
+              <pre><code>NotBlank.item.title = Todo item must have a title</code></pre>
+              <pre><code>&lt;form:errors path="title" /&gt;</code></pre>
+            </li>      
+          </ul>
+        </section>
+        
+        <section>
+          <h2>Custom Validation</h2>
+          <p>1. Define your validation annotation</p>
+          <pre><code data-trim  contenteditable class="java">
+@Target( { METHOD, FIELD } )
+@Retention(RUNTIME)
+@Constraint(validatedBy = ExistingItemIDValidator.class)
+public @interface ExistingItemID {
+    String message() default "{nl.ypmania.demo.ExistingItemID}";
+    
+    Class&lt;?&gt;[] groups() default {};
+    
+    Class&lt;? extends Payload&gt;[] payload() default {};
+}          
+          </code></pre>
+        </section>
+        
+        <section>
+          <h2>Custom Validation</h2>
+          <p>2. Write the implementation</p>
+          <pre><code data-trim  contenteditable class="java">
+public class ExistingItemIDValidator 
+       implements ConstraintValidator&lt;ExistingItemID, UUID&gt; {
+    @Autowired
+    private ItemService itemService;
+
+    @Override
+    public void initialize(ExistingItemID constraintAnnotation) { }
+
+    @Override
+    public boolean isValid(UUID id, ConstraintValidatorContext context) {
+        return (id == null) ? true : itemService.exists(id);
+    }
+}          </code></pre>
+        </section>
+        
 			</div>
 
 		</div>
@@ -252,7 +442,7 @@ public class TodoItem {
 				progress: true,
 				history: true,
 				center: true,
-				slideNumber: false,
+				slideNumber: true,
 
 				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
 				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none

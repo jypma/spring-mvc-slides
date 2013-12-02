@@ -277,6 +277,11 @@ body {
 	list-style-type: circle;
 }
 
+.reveal section > ul > li {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
 .reveal ul ul,
 .reveal ul ol,
 .reveal ol ol,
